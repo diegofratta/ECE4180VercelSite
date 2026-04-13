@@ -1,0 +1,419 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   CSS Custom Properties / Design Tokens
+   ======================================== */
+:root {
+  /* GT Brand Colors */
+  --gt-gold: #B3A369;
+  --gt-gold-light: #C4B67D;
+  --gt-gold-dark: #8B7D4F;
+  --gt-navy: #003057;
+  --gt-navy-light: #1A4A73;
+  --gt-navy-dark: #002142;
+  
+  /* Light Theme (Default) */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  --bg-tertiary: #F1F3F4;
+  --bg-elevated: #FFFFFF;
+  
+  --text-primary: #1F2937;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --text-inverse: #FFFFFF;
+  
+  --border-primary: #E5E7EB;
+  --border-secondary: #D1D5DB;
+  
+  --accent-primary: var(--gt-navy);
+  --accent-secondary: var(--gt-gold);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+/* Dark Theme */
+.dark {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --bg-elevated: #1E293B;
+  
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+  --text-inverse: #0F172A;
+  
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  
+  --accent-primary: var(--gt-gold);
+  --accent-secondary: var(--gt-navy-light);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-body antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+    color: var(--text-primary);
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  code, pre {
+    @apply font-mono;
+  }
+  
+  a {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* ========================================
+   Component Classes
+   ======================================== */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2.5 rounded-xl font-medium transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply btn bg-secondary-500 text-white hover:bg-secondary-600;
+    @apply focus:ring-secondary-500 dark:focus:ring-offset-surface-dark;
+    @apply shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-primary-400 text-secondary-900 hover:bg-primary-500;
+    @apply focus:ring-primary-400 dark:focus:ring-offset-surface-dark;
+    @apply shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+  }
+  
+  .btn-ghost {
+    @apply btn bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800;
+    @apply text-gray-700 dark:text-gray-300;
+  }
+  
+  .btn-danger {
+    @apply btn bg-accent-error text-white hover:bg-red-600;
+    @apply focus:ring-red-500;
+    @apply shadow-md hover:shadow-lg;
+  }
+  
+  .btn-success {
+    @apply btn bg-accent-success text-white hover:bg-green-600;
+    @apply focus:ring-green-500;
+    @apply shadow-md hover:shadow-lg;
+  }
+  
+  .btn-warning {
+    @apply btn bg-amber-500 text-white hover:bg-amber-600;
+    @apply focus:ring-amber-500;
+    @apply shadow-md hover:shadow-lg;
+  }
+  
+  /* Cards */
+  .card {
+    @apply rounded-2xl p-6 transition-all duration-300;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .card-hover {
+    @apply card hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  .card-glass {
+    @apply rounded-2xl p-6 backdrop-blur-md;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark .card-glass {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+  }
+  
+  /* Form Inputs */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+  }
+  
+  .input:hover {
+    border-color: var(--border-secondary);
+  }
+  
+  .input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .label {
+    @apply block text-sm font-medium mb-2;
+    color: var(--text-secondary);
+  }
+  
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  }
+  
+  .badge-primary {
+    @apply badge bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200;
+  }
+  
+  .badge-success {
+    @apply badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+  
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200;
+  }
+  
+  .badge-error {
+    @apply badge bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+  
+  .badge-locked {
+    @apply badge bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200;
+  }
+  
+  /* Status Indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  
+  .status-dot-success {
+    @apply status-dot bg-green-500 animate-pulse-soft;
+  }
+  
+  .status-dot-warning {
+    @apply status-dot bg-amber-500;
+  }
+  
+  .status-dot-error {
+    @apply status-dot bg-red-500;
+  }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+@layer utilities {
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, var(--gt-navy) 0%, var(--gt-gold) 100%);
+  }
+  
+  .dark .text-gradient {
+    background-image: linear-gradient(135deg, var(--gt-gold) 0%, var(--gt-gold-light) 100%);
+  }
+  
+  /* Gradient Backgrounds */
+  .bg-gradient-gt {
+    background: linear-gradient(135deg, var(--gt-navy) 0%, var(--gt-navy-light) 100%);
+  }
+  
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, var(--gt-gold-dark) 0%, var(--gt-gold) 100%);
+  }
+  
+  /* Animation Delays for Staggered Effects */
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+  
+  /* Glow Effects */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(179, 163, 105, 0.3);
+  }
+  
+  .glow-navy {
+    box-shadow: 0 0 20px rgba(0, 48, 87, 0.3);
+  }
+  
+  /* Scrollbar Styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-secondary) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--border-secondary);
+    border-radius: 3px;
+  }
+}
+
+/* ========================================
+   Markdown Content Styles
+   ======================================== */
+.markdown-content,
+.prose {
+  @apply max-w-none;
+}
+
+.markdown-content ul,
+.prose ul {
+  @apply list-disc pl-6 my-4 space-y-2;
+}
+
+.markdown-content ol,
+.prose ol {
+  @apply list-decimal pl-6 my-4 space-y-2;
+}
+
+.markdown-content li,
+.prose li {
+  color: var(--text-secondary);
+}
+
+.markdown-content code,
+.prose code {
+  @apply font-mono text-sm px-1.5 py-0.5 rounded;
+  background-color: var(--bg-tertiary);
+  color: var(--gt-navy);
+}
+
+.dark .markdown-content code,
+.dark .prose code {
+  color: var(--gt-gold);
+}
+
+.markdown-content pre,
+.prose pre {
+  @apply p-4 rounded-xl overflow-x-auto my-4;
+  background-color: var(--bg-secondary);
+}
+
+.markdown-content a,
+.prose a {
+  @apply font-medium underline decoration-2 underline-offset-2;
+  color: var(--gt-navy);
+  text-decoration-color: var(--gt-gold);
+}
+
+.dark .markdown-content a,
+.dark .prose a {
+  color: var(--gt-gold);
+  text-decoration-color: var(--gt-navy-light);
+}
+
+/* Section-specific list styles */
+[data-section-type="objectives"] .prose ul,
+[data-section-type="requirements"] .prose ul {
+  @apply ml-2;
+}
+
+[data-section-type="objectives"] .prose li,
+[data-section-type="requirements"] .prose li {
+  @apply pl-2 mb-3;
+}
+
+/* ========================================
+   Loading States
+   ======================================== */
+.skeleton {
+  @apply animate-pulse rounded-xl;
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.spinner {
+  @apply w-8 h-8 rounded-full border-2;
+  border-color: var(--gt-gold) transparent var(--gt-gold) transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Page Transition Animations
+   ======================================== */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+/* ========================================
+   Focus Visible for Accessibility
+   ======================================== */
+.focus-ring {
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2;
+}
+
+.dark .focus-ring {
+  @apply focus-visible:ring-primary-400 focus-visible:ring-offset-surface-dark;
+}
