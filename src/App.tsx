@@ -5,6 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 import { QueueNotificationProvider } from './contexts/QueueNotificationContext';
 import Layout from './components/layout/Layout';
 import NameCollectionModal from './components/NameCollectionModal';
+import { Role, hasRole, isStaffLevel } from './utils/roles';
 import {
   SignInForm,
   SignUpForm,
@@ -28,16 +29,29 @@ import CheckoffQueuePage from './pages/CheckoffQueuePage';
 import LabQueuePage from './pages/LabQueuePage';
 import GradesPage from './pages/GradesPage';
 import MyGradesPage from './pages/MyGradesPage';
+import StaffManagementPage from './pages/StaffManagementPage';
+import TermsPage from './pages/TermsPage';
+import PurgePage from './pages/PurgePage';
+import AuditLogViewer from './pages/AuditLogViewer';
+import DataInspectorPage from './pages/DataInspectorPage';
 
-// Protected route component
+// Protected route component.
+//
+// Two modes:
+//   • minRole — hierarchical: "user's rank must be >= minRole". Use this for
+//     most admin/staff pages (ta also counts).
+//   • studentOnly — the inverse: a page only students should see (e.g.
+//     /my-grades, which staff can't meaningfully use).
 interface ProtectedRouteProps {
   element: React.ReactNode;
-  allowedRoles?: ('student' | 'staff')[];
+  minRole?: Role;        // defaults to 'student' (i.e. any authenticated user)
+  studentOnly?: boolean; // if true, non-students are redirected home
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  element, 
-  allowedRoles = ['student', 'staff'] 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  element,
+  minRole = 'student',
+  studentOnly = false,
 }) => {
   const { authState } = useAuth();
   const { isAuthenticated, user, isLoading } = authState;
@@ -50,7 +64,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/signin" />;
   }
 
-  if (user && !allowedRoles.includes(user.role)) {
+  if (studentOnly) {
+    if (user && user.role !== 'student') return <Navigate to="/" />;
+  } else if (!hasRole(user, minRole)) {
     return <Navigate to="/" />;
   }
 
@@ -95,7 +111,7 @@ const AppRoutes = () => {
       />
       <Route
         path="/labs/:labId/edit"
-        element={<ProtectedRoute element={<LabContentEditorPage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<LabContentEditorPage />} minRole="ta" />}
       />
       <Route 
         path="/guides" 
@@ -103,7 +119,7 @@ const AppRoutes = () => {
       />
       <Route
         path="/guides/new"
-        element={<ProtectedRoute element={<GuideContentEditorPage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<GuideContentEditorPage />} minRole="ta" />}
       />
       <Route
         path="/guides/:guideId"
@@ -111,23 +127,23 @@ const AppRoutes = () => {
       />
       <Route
         path="/guides/:guideId/edit"
-        element={<ProtectedRoute element={<GuideContentEditorPage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<GuideContentEditorPage />} minRole="ta" />}
       />
       <Route
         path="/people"
-        element={<ProtectedRoute element={<PeoplePage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<PeoplePage />} minRole="ta" />}
       />
       <Route
         path="/grades"
-        element={<ProtectedRoute element={<GradesPage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<GradesPage />} minRole="ta" />}
       />
       <Route
         path="/people/:studentName"
-        element={<ProtectedRoute element={<StudentDetailPage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<StudentDetailPage />} minRole="ta" />}
       />
       <Route
         path="/checkoffs"
-        element={<ProtectedRoute element={<CheckoffQueuePage />} allowedRoles={['staff']} />}
+        element={<ProtectedRoute element={<CheckoffQueuePage />} minRole="ta" />}
       />
       <Route
         path="/queue"
@@ -135,7 +151,27 @@ const AppRoutes = () => {
       />
       <Route
         path="/my-grades"
-        element={<ProtectedRoute element={<MyGradesPage />} allowedRoles={['student']} />}
+        element={<ProtectedRoute element={<MyGradesPage />} studentOnly />}
+      />
+      <Route
+        path="/admin/staff"
+        element={<ProtectedRoute element={<StaffManagementPage />} minRole="admin" />}
+      />
+      <Route
+        path="/admin/terms"
+        element={<ProtectedRoute element={<TermsPage />} minRole="admin" />}
+      />
+      <Route
+        path="/admin/purge"
+        element={<ProtectedRoute element={<PurgePage />} minRole="admin" />}
+      />
+      <Route
+        path="/admin/audit"
+        element={<ProtectedRoute element={<AuditLogViewer />} minRole="ta" />}
+      />
+      <Route
+        path="/admin/data"
+        element={<ProtectedRoute element={<DataInspectorPage />} minRole="ta" />}
       />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -150,8 +186,8 @@ const LabAccessCheck: React.FC = () => {
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
-    // Only check access for students
-    if (authState.user?.role === 'staff') {
+    // Only check access for students — staff-level users always see labs.
+    if (isStaffLevel(authState.user)) {
       setIsChecking(false);
       return;
     }

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { PartSubmission, QueueFilters, Partner } from '../types';
 import { API_ENDPOINT } from '../aws-config';
 import PartnerCheckoffModal from '../components/PartnerCheckoffModal';
+import { isStaffLevel } from '../utils/roles';
 
 const CheckoffQueuePage: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const CheckoffQueuePage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (authState.isAuthenticated && authState.user?.role !== 'staff') {
+    if (authState.isAuthenticated && !isStaffLevel(authState.user)) {
       navigate('/');
     }
   }, [authState, navigate]);

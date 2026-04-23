@@ -12,6 +12,7 @@ import {
   ChangePasswordCommand
 } from '@aws-sdk/client-cognito-identity-provider';
 import { User, AuthState } from '../types';
+import { normalizeRole } from '../utils/roles';
 import { cognitoClient, USER_POOL_CLIENT_ID, API_ENDPOINT } from '../aws-config';
 
 // Token expiration times in milliseconds
@@ -25,7 +26,7 @@ interface AuthContextType {
   toggleViewAsStudent: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, section: 'A' | 'B') => Promise<void>;
   confirmSignUp: (email: string, code: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   confirmForgotPassword: (email: string, code: string, newPassword: string) => Promise<void>;
@@ -265,7 +266,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const parseUserAttributes = (attributes: AttributeType[]): User => {
-    const role = attributes.find(attr => attr.Name === 'custom:role')?.Value || 'student';
+    const rawRole = attributes.find(attr => attr.Name === 'custom:role')?.Value;
     const studentId = attributes.find(attr => attr.Name === 'custom:studentId')?.Value;
     const fullName = attributes.find(attr => attr.Name === 'custom:fullName')?.Value;
     const section = attributes.find(attr => attr.Name === 'custom:section')?.Value as 'A' | 'B' | 'Staff' | undefined;
@@ -274,7 +275,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return {
       username,
-      role: role as 'student' | 'staff',
+      role: normalizeRole(rawRole),
       studentId,
       fullName,
       section
@@ -379,30 +380,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, fullName: string, section: 'A' | 'B') => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      
+
       // Validate email domain
       if (!email.endsWith('@gatech.edu')) {
         throw new Error('Only @gatech.edu email addresses are allowed');
       }
-      
-      // Note: custom:role is NOT set here - it's securely assigned by the
-      // Post-Confirmation Lambda trigger based on server-side email whitelist
+      if (!fullName.trim()) {
+        throw new Error('Full name is required');
+      }
+      if (section !== 'A' && section !== 'B') {
+        throw new Error('Section must be A or B');
+      }
+
+      // Note: custom:role is NOT set here — it's securely assigned by the
+      // Post-Confirmation Lambda trigger based on server-side SSM allowlists.
+      // custom:fullName and custom:section pass through from the signup form
+      // so new students have a fully-populated profile on first sign-in and
+      // the NameCollectionModal never needs to fire.
       const userAttributes: AttributeType[] = [
         { Name: 'email', Value: email },
+        { Name: 'custom:fullName', Value: fullName.trim() },
+        { Name: 'custom:section', Value: section },
       ];
-      
+
       const command = new SignUpCommand({
         ClientId: USER_POOL_CLIENT_ID,
         Username: email,
         Password: password,
         UserAttributes: userAttributes
       });
-      
+
       await cognitoClient.send(command);
-      
+
       setAuthState(prev => ({ ...prev, isLoading: false }));
     } catch (error) {
       setAuthState(prev => ({

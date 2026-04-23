@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { API_ENDPOINT } from '../aws-config';
+import { isStaffLevel } from '../utils/roles';
 
 const HomePage: React.FC = () => {
   const { authState } = useAuth();
@@ -88,7 +89,7 @@ const HomePage: React.FC = () => {
       {isAuthenticated && (
         <section className="animate-slide-up animation-delay-100">
           <div className={`card-hover p-8 border-l-4 ${
-            user?.role === 'staff' 
+            isStaffLevel(user)
               ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10' 
               : 'border-l-gt-gold bg-primary-50/50 dark:bg-primary-900/10'
           }`}>
@@ -106,7 +107,7 @@ const HomePage: React.FC = () => {
                   </Link>
                 )}
 
-                {user?.role === 'staff' && (
+                {isStaffLevel(user) && (
                   <div className="flex gap-3">
                     <Link to="/checkoffs" className="btn-primary inline-flex">
                       Review Checkoffs
@@ -118,8 +119,8 @@ const HomePage: React.FC = () => {
                 )}
               </div>
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                user?.role === 'staff' 
-                  ? 'bg-emerald-500' 
+                isStaffLevel(user)
+                  ? 'bg-emerald-500'
                   : 'bg-gt-gold'
               }`}>
                 <span className="text-2xl font-bold text-white">

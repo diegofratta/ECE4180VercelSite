@@ -5,6 +5,7 @@ import { Guide, GuideSection } from '../types';
 import { API_ENDPOINT } from '../aws-config';
 import ReactMarkdown from 'react-markdown';
 import LabSection from '../components/labs/content/LabSection';
+import { isStaffLevel } from '../utils/roles';
 
 const GuideDetailPage: React.FC = () => {
   const { guideId } = useParams<{ guideId: string }>();
@@ -12,7 +13,7 @@ const GuideDetailPage: React.FC = () => {
   const [guide, setGuide] = useState<Guide | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isStaff = authState.user?.role === 'staff';
+  const isStaff = isStaffLevel(authState.user);
 
   const fetchGuideDetails = useCallback(async () => {
     try {

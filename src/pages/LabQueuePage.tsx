@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { QueueEntry, LabQueue, LabQueueResponse, Lab, Partner } from '../types';
 import { API_ENDPOINT } from '../aws-config';
 import PartnerCheckoffModal from '../components/PartnerCheckoffModal';
+import { isStaffLevel } from '../utils/roles';
 
 const LabQueuePage: React.FC = () => {
   const { authState, viewAsStudent } = useAuth();
@@ -31,7 +32,7 @@ const LabQueuePage: React.FC = () => {
   const [selectedLabId, setSelectedLabId] = useState('');
   const [selectedPartId, setSelectedPartId] = useState('');
 
-  const isStaff = authState.user?.role === 'staff' && !viewAsStudent;
+  const isStaff = isStaffLevel(authState.user) && !viewAsStudent;
 
   // Fetch queue status
   const fetchQueue = useCallback(async () => {

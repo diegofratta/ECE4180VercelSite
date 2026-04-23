@@ -5,6 +5,7 @@ import VideoPartUploader from '../../submissions/VideoPartUploader';
 import VideoPlayer from '../../VideoPlayer';
 import { API_ENDPOINT } from '../../../aws-config';
 import { useAuth } from '../../../contexts/AuthContext';
+import { isStaffLevel } from '../../../utils/roles';
 
 interface EnhancedLabContentProps {
   content: LabContent;
@@ -100,8 +101,8 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
         // IMPORTANT: If user is staff, we MUST explicitly filter by their ID to see their own submissions.
         // Otherwise the backend 'getAllSubmissions' returns ALL submissions for this lab from ALL students,
         // which causes random students' statuses to appear in the UI.
-        if (authState.user?.role === 'staff') {
-          const userId = authState.user.studentId || authState.user.username;
+        if (isStaffLevel(authState.user)) {
+          const userId = authState.user?.studentId || authState.user?.username;
           if (userId) {
             apiUrl += `&studentId=${encodeURIComponent(userId)}`;
           }

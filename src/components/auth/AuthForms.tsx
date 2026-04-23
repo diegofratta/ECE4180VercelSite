@@ -168,6 +168,8 @@ export const SignUpForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [section, setSection] = useState<'' | 'A' | 'B'>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -196,8 +198,20 @@ export const SignUpForm: React.FC = () => {
       return;
     }
 
+    if (!fullName.trim()) {
+      setError('Full name is required');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!section) {
+      setError('Please pick your section');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await signUp(email, password);
+      await signUp(email, password, fullName.trim(), section);
       setShowConfirmation(true);
     } catch (err) {
       const errorMessage = (err as Error).message;
@@ -292,6 +306,35 @@ export const SignUpForm: React.FC = () => {
           required
           hint="Only @gatech.edu addresses are allowed"
         />
+        <FormInput
+          id="fullName"
+          type="text"
+          label="Full Name (as on Canvas)"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          autoComplete="name"
+          hint='Use your name exactly as it appears in Canvas — e.g. "Jane Doe"'
+        />
+        <div className="mb-5">
+          <label htmlFor="section" className="label">
+            Section
+          </label>
+          <select
+            id="section"
+            className="input"
+            value={section}
+            onChange={(e) => setSection(e.target.value as '' | 'A' | 'B')}
+            required
+          >
+            <option value="">Select your section…</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+          </select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+            Check your Canvas enrollment if you're not sure.
+          </p>
+        </div>
         <FormInput
           id="password"
           type="password"

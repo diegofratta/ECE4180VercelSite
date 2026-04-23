@@ -5,6 +5,7 @@ import { API_ENDPOINT } from '../aws-config';
 import { Guide } from '../types';
 import LabContentPreview from '../components/labs/content/LabContentPreview';
 import LabBuilder from '../components/labs/builder/LabBuilder';
+import { isStaffLevel } from '../utils/roles';
 
 const GuideContentEditorPage: React.FC = () => {
   const { guideId } = useParams<{ guideId: string }>();
@@ -24,7 +25,7 @@ const GuideContentEditorPage: React.FC = () => {
 
   // Check if user is staff
   useEffect(() => {
-    if (authState.user?.role !== 'staff') {
+    if (!isStaffLevel(authState.user)) {
       navigate('/guides');
     }
   }, [authState.user, navigate]);

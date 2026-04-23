@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { API_ENDPOINT } from '../aws-config';
+import { isStaffLevel } from '../utils/roles';
 
 interface QueueNotificationContextType {
   showBanner: boolean;
@@ -30,7 +31,7 @@ export const QueueNotificationProvider: React.FC<QueueNotificationProviderProps>
   const hasInitializedRef = useRef<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const isStaff = authState.user?.role === 'staff' && !viewAsStudent;
+  const isStaff = isStaffLevel(authState.user) && !viewAsStudent;
   const isOnQueuePage = location.pathname === '/queue';
 
   const handleBannerClick = () => {

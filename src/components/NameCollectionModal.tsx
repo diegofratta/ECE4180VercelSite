@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { isStaffLevel } from '../utils/roles';
 
 interface NameCollectionModalProps {
   isOpen: boolean;
@@ -19,8 +20,8 @@ const NameCollectionModal: React.FC<NameCollectionModalProps> = ({
   
   const { updateUserAttributes, authState } = useAuth();
   
-  // Check if user is staff
-  const isStaff = authState.user?.role === 'staff';
+  // Check if user has any staff-level role
+  const isStaff = isStaffLevel(authState.user);
 
   // Handle modal visibility animations
   useEffect(() => {

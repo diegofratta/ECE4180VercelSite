@@ -5,6 +5,7 @@ import { API_ENDPOINT } from '../aws-config';
 import { Lab } from '../types';
 import LabContentPreview from '../components/labs/content/LabContentPreview';
 import LabBuilder from '../components/labs/builder/LabBuilder';
+import { isStaffLevel } from '../utils/roles';
 
 const LabContentEditorPage: React.FC = () => {
   const { labId } = useParams<{ labId: string }>();
@@ -21,7 +22,7 @@ const LabContentEditorPage: React.FC = () => {
 
   // Check if user is staff
   useEffect(() => {
-    if (authState.user?.role !== 'staff') {
+    if (!isStaffLevel(authState.user)) {
       navigate('/labs');
     }
   }, [authState.user, navigate]);

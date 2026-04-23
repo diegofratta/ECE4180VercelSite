@@ -1,7 +1,13 @@
 // User types
+//
+// Role widened in Wave 2: student | ta | admin. The legacy 'staff' value is
+// accepted on read (src/utils/roles.ts normalizeRole aliases it to 'admin')
+// so pre-migration JWTs keep working until they refresh.
+export type UserRole = 'student' | 'ta' | 'admin';
+
 export interface User {
   username: string;
-  role: 'student' | 'staff';
+  role: UserRole;
   studentId?: string;
   fullName?: string;
   section?: 'A' | 'B' | 'Staff';
@@ -30,6 +36,7 @@ export interface Lab {
   updatedAt: string;
   grade?: number | null;
   earlyBirdPoints?: number;
+  unlockAt?: string;
 }
 
 // Structured lab content types
@@ -316,4 +323,81 @@ export interface SelectableStudent {
   section?: string;
   hasPartner: boolean;
 }
+
+// Staff role management (Wave 3)
+export interface StaffUser {
+  email: string;
+  username: string | null;
+  status: string; // CONFIRMED, NOT_SIGNED_UP, etc.
+  enabled: boolean;
+  role: UserRole;
+  fullName: string | null;
+  section: string | null;
+  createdAt: string | null;
+  lastModifiedAt: string | null;
+  hasAccount: boolean;
+  onAllowlist?: boolean;
+  allowlistRole?: 'ta' | 'admin';
+}
+
+export interface StaffListResponse {
+  count: number;
+  users: StaffUser[];
+  allowlists: {
+    admins: string[];
+    tas: string[];
+  };
+}
+
+// Term management (Wave 4)
+export type TermStatus = 'upcoming' | 'active' | 'archived';
+
+export interface Term {
+  termId: string;        // e.g. "sp26"
+  displayName: string;   // e.g. "Spring 2026"
+  status: TermStatus;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: string;
+  createdBy: string;
+  updatedAt?: string;
+  updatedBy?: string;
+  archivedAt?: string;
+  isActive?: boolean;
+}
+
+export interface TermListResponse {
+  terms: Term[];
+  activeTermId: string | null;
+  count: number;
+}
+
+export interface CurrentTermResponse {
+  activeTermId: string | null;
+  term: Term | null;
+}
+
+// Term purge / data lifecycle (Wave 5).
+//
+// The source of truth for these types lives in utils/purge.ts alongside the
+// fetch helpers; we re-export them here so consumers can import either from
+// '../types' (matching how Term/TermListResponse are imported) or directly
+// from '../utils/purge'. Keep this in sync with utils/purge.ts.
+export type {
+  TermUsage,
+  SnapshotResult,
+  PurgeResult,
+  OrphanedMedia,
+  StudentResetResult,
+} from '../utils/purge';
+
+// Audit log (Wave 6). Same re-export pattern as purge types above —
+// source of truth lives in utils/audit.ts.
+export type {
+  AuditEntry,
+  AuditQueryParams,
+  AuditListResponse,
+  AuditActionsResponse,
+  AuditExportResponse,
+} from '../utils/audit';
 
