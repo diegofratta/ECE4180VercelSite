@@ -154,7 +154,6 @@ const TermsPage: React.FC = () => {
   }
 
   const activeTerm = useMemo(() => data?.terms.find((t) => t.isActive) || null, [data]);
-  const otherTerms = useMemo(() => (data?.terms || []).filter((t) => !t.isActive), [data]);
 
   return (
     <div className="max-w-5xl mx-auto">
