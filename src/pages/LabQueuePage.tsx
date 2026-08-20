@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { QueueEntry, LabQueue, LabQueueResponse, Lab, Partner } from '../types';
 import { API_ENDPOINT } from '../aws-config';
+import { labDisplayLabel, labDisplayName } from '../utils/labDisplay';
 import PartnerCheckoffModal from '../components/PartnerCheckoffModal';
 import { isStaffLevel } from '../utils/roles';
 
@@ -486,7 +487,7 @@ const LabQueuePage: React.FC = () => {
   // Student View - Checkoff just approved celebration
   if (!isStaff && checkoffApproved) {
     const lab = labs.find(l => l.labId === checkoffApproved.labId);
-    const labName = lab?.title || checkoffApproved.labId.replace('lab', 'Lab ');
+    const labName = lab?.title || labDisplayName(lab ?? { labId: checkoffApproved.labId });
     const partNum = checkoffApproved.partId.replace('part', '');
     
     return (
@@ -642,7 +643,7 @@ const LabQueuePage: React.FC = () => {
                   <option value="">Select a lab...</option>
                   {labs.map(lab => (
                     <option key={lab.labId} value={lab.labId}>
-                      Lab {lab.labId.replace('lab', '')}: {lab.title}
+                      Lab {labDisplayLabel(lab)}: {lab.title}
                     </option>
                   ))}
                 </select>
@@ -711,7 +712,7 @@ const LabQueuePage: React.FC = () => {
                   <p className="font-medium text-secondary-700 dark:text-white">{entry.studentName}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatTimeSince(entry.joinedAt)} ago
-                    {type === 'checkoff' && entry.labId && ` • Lab ${entry.labId.replace('lab', '')}`}
+                    {type === 'checkoff' && entry.labId && ` • Lab ${labDisplayLabel(labs.find(l => l.labId === entry.labId) ?? { labId: entry.labId })}`}
                     {type === 'checkoff' && entry.partId && ` Part ${entry.partId.replace('part', '')}`}
                   </p>
                 </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Lab, LabStatus } from '../../types';
+import { labDisplayLabel } from '../../utils/labDisplay';
 
 interface LabCardProps {
   lab: Lab;
@@ -84,8 +85,8 @@ const LabCard: React.FC<LabCardProps> = ({ lab, status, isStaff = false, viewAsS
     );
   };
 
-  // Extract lab number from labId
-  const labNumber = lab.labId.replace('lab', '');
+  // Admin-specified friendly label, falling back to the lab's order.
+  const labNumber = labDisplayLabel(lab);
 
   return (
     <div 
@@ -95,8 +96,9 @@ const LabCard: React.FC<LabCardProps> = ({ lab, status, isStaff = false, viewAsS
           : 'border-gt-gold/30 hover:border-gt-gold'
       }`}
     >
-      {/* Lab Number Badge */}
-      <div className={`absolute -top-3 -left-3 w-10 h-10 rounded-xl flex items-center justify-center font-display font-bold text-lg shadow-lg transition-all duration-300 ${
+      {/* Lab Number Badge — min-w rather than fixed w so a multi-character
+          displayName ("Extra") expands the badge instead of spilling out. */}
+      <div className={`absolute -top-3 -left-3 min-w-10 h-10 px-2 rounded-xl flex items-center justify-center whitespace-nowrap font-display font-bold text-lg shadow-lg transition-all duration-300 ${
         showLockIndicator 
           ? 'bg-gray-400 dark:bg-gray-600 text-white' 
           : 'bg-gradient-gt text-gt-gold group-hover:scale-110'

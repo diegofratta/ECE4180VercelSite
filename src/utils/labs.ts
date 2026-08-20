@@ -24,6 +24,7 @@ async function parseOrThrow(res: Response): Promise<any> {
 
 export interface CreateLabInput {
   title: string;
+  displayName?: string;
   description?: string;
   order?: number;
   structuredContent?: any;
@@ -74,7 +75,12 @@ export async function deleteLab(
 
 export async function cloneLab(
   labId: string,
-  overrides?: { newLabId?: string; title?: string; description?: string }
+  overrides?: {
+    newLabId?: string;
+    title?: string;
+    displayName?: string;
+    description?: string;
+  }
 ): Promise<Lab> {
   const res = await fetch(
     `${base()}/admin/labs/${encodeURIComponent(labId)}/clone`,

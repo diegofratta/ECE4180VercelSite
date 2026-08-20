@@ -26,6 +26,10 @@ export interface AuthState {
 export interface Lab {
   labId: string;
   title: string;
+  // Admin-specified friendly label shown on cards and detail headers.
+  // Optional: labs created before this field existed won't have it, so
+  // consumers should fall back to `order` (see labDisplayLabel).
+  displayName?: string;
   description: string;
   content: string;
   structuredContent?: LabContent;

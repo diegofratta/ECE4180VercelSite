@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import VideoPlayer from '../components/VideoPlayer';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { PartSubmission, QueueFilters, Partner } from '../types';
+import { PartSubmission, QueueFilters, Partner, Lab } from '../types';
 import { API_ENDPOINT } from '../aws-config';
+import { labDisplayLabel } from '../utils/labDisplay';
 import PartnerCheckoffModal from '../components/PartnerCheckoffModal';
 import { isStaffLevel } from '../utils/roles';
 
@@ -33,6 +34,36 @@ const CheckoffQueuePage: React.FC = () => {
     partnerInfo: Partner;
   } | null>(null);
   const [studentPartners, setStudentPartners] = useState<Record<string, Partner | null>>({});
+
+  // Submissions carry only a labId, so the friendly label has to be resolved
+  // against the labs list. Keyed by labId for O(1) lookup during render.
+  const [labsById, setLabsById] = useState<Record<string, Lab>>({});
+
+  useEffect(() => {
+    const fetchLabs = async () => {
+      try {
+        const token = localStorage.getItem('idToken');
+        if (!token) return;
+
+        const response = await fetch(`${API_ENDPOINT.replace(/\/$/, '')}/labs`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const byId: Record<string, Lab> = {};
+        for (const lab of data as Lab[]) byId[lab.labId] = lab;
+        setLabsById(byId);
+      } catch (err) {
+        // Non-fatal: labelForLab falls back to the lab's id.
+        console.error('Failed to fetch labs for display names:', err);
+      }
+    };
+    fetchLabs();
+  }, []);
+
+  const labelForLab = (labId: string): string =>
+    labDisplayLabel(labsById[labId] ?? { labId });
 
   const formatDisplayName = (submission: PartSubmission): string => {
     return submission.fullName || submission.username;
@@ -552,7 +583,7 @@ const CheckoffQueuePage: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Lab {submission.labId.replace('lab', '')} • Part {submission.partId.replace('part', '')}
+                      Lab {labelForLab(submission.labId)} • Part {submission.partId.replace('part', '')}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       {new Date(submission.submittedAt).toLocaleDateString()}
@@ -577,7 +608,7 @@ const CheckoffQueuePage: React.FC = () => {
                       <span className="text-xs text-gray-400 font-normal">{getNameStatusIndicator(currentSubmission)}</span>
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Lab {currentSubmission.labId.replace('lab', '')} • Part {currentSubmission.partId.replace('part', '')}
+                      Lab {labelForLab(currentSubmission.labId)} • Part {currentSubmission.partId.replace('part', '')}
                     </p>
                   </div>
                   <span className={`badge ${

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lab, LabStatus, LabPart, PartSubmission } from '../types';
 import { API_ENDPOINT } from '../aws-config';
+import { labDisplayLabel } from '../utils/labDisplay';
 import ReactMarkdown from 'react-markdown';
 import EnhancedLabContent from '../components/labs/content/EnhancedLabContent';
 import LabPartStatusSummary from '../components/labs/LabPartStatusSummary';
@@ -190,7 +191,7 @@ const LabDetailPage: React.FC = () => {
 
   // Main Lab Content
   if (lab) {
-    const labNumber = lab.labId.replace('lab', '');
+    const labNumber = labDisplayLabel(lab);
     
     return (
       <div className="max-w-7xl mx-auto animate-fade-in">
@@ -210,9 +211,9 @@ const LabDetailPage: React.FC = () => {
         {/* Lab Header */}
         <div className="card mb-8 overflow-hidden animate-slide-up">
           <div className="flex items-start gap-6">
-            {/* Lab Number Badge */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-gt flex items-center justify-center flex-shrink-0 shadow-lg">
-              <span className="font-display font-bold text-gt-gold text-2xl">{labNumber}</span>
+            {/* Lab Number Badge — min-w so a word-length displayName fits. */}
+            <div className="min-w-16 h-16 px-3 rounded-2xl bg-gradient-gt flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="font-display font-bold text-gt-gold text-2xl whitespace-nowrap">{labNumber}</span>
             </div>
             
             <div className="flex-1">

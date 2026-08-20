@@ -42,6 +42,7 @@ const LabsPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
   const [createTitle, setCreateTitle] = useState('');
+  const [createDisplayName, setCreateDisplayName] = useState('');
   const [createDescription, setCreateDescription] = useState('');
   const [createOrder, setCreateOrder] = useState('');
 
@@ -60,6 +61,7 @@ const LabsPage: React.FC = () => {
   // Clone modal state
   const [cloneModalFor, setCloneModalFor] = useState<string | null>(null);
   const [cloneTitle, setCloneTitle] = useState('');
+  const [cloneDisplayName, setCloneDisplayName] = useState('');
   const [cloneNewId, setCloneNewId] = useState('');
   const [cloneBusy, setCloneBusy] = useState(false);
 
@@ -304,6 +306,7 @@ const LabsPage: React.FC = () => {
     try {
       setCreateBusy(true);
       const input: CreateLabInput = { title };
+      if (createDisplayName.trim()) input.displayName = createDisplayName.trim();
       if (createDescription.trim()) input.description = createDescription.trim();
       if (createOrder.trim() && !Number.isNaN(Number(createOrder))) {
         input.order = Number(createOrder);
@@ -312,6 +315,7 @@ const LabsPage: React.FC = () => {
       setToast({ kind: 'ok', msg: `Created ${lab.labId}` });
       setShowCreateModal(false);
       setCreateTitle('');
+      setCreateDisplayName('');
       setCreateDescription('');
       setCreateOrder('');
       await fetchLabs();
@@ -390,6 +394,7 @@ const LabsPage: React.FC = () => {
     setOpenMenuLabId(null);
     setCloneModalFor(labId);
     setCloneTitle(`${currentTitle} (copy)`);
+    setCloneDisplayName('');
     setCloneNewId('');
   }
 
@@ -398,9 +403,10 @@ const LabsPage: React.FC = () => {
     if (!cloneModalFor) return;
     try {
       setCloneBusy(true);
-      const overrides: { newLabId?: string; title?: string } = {};
+      const overrides: { newLabId?: string; title?: string; displayName?: string } = {};
       if (cloneNewId.trim()) overrides.newLabId = cloneNewId.trim();
       if (cloneTitle.trim()) overrides.title = cloneTitle.trim();
+      if (cloneDisplayName.trim()) overrides.displayName = cloneDisplayName.trim();
       const lab = await cloneLab(cloneModalFor, overrides);
       setToast({ kind: 'ok', msg: `Cloned to ${lab.labId}` });
       setCloneModalFor(null);
@@ -941,6 +947,24 @@ const LabsPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                Display name (optional)
+              </label>
+              <input
+                type="text"
+                value={createDisplayName}
+                onChange={(e) => setCreateDisplayName(e.target.value)}
+                placeholder="Leave blank to use the lab's order number"
+                maxLength={24}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                disabled={createBusy}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Short label shown on the lab card badge — e.g. <strong>5</strong> or{' '}
+                <strong>Extra</strong>. Keep it to a few characters.
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                 Description
               </label>
               <textarea
@@ -1004,6 +1028,20 @@ const LabsPage: React.FC = () => {
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 disabled={cloneBusy}
                 autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                Display name (optional)
+              </label>
+              <input
+                type="text"
+                value={cloneDisplayName}
+                onChange={(e) => setCloneDisplayName(e.target.value)}
+                placeholder="Leave blank to use the new lab's order number"
+                maxLength={24}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                disabled={cloneBusy}
               />
             </div>
             <div>
