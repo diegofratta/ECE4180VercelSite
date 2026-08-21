@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
         <h1 className="font-display text-5xl md:text-6xl font-bold mb-4">
           <span className="text-secondary-700 dark:text-white">ECE 4180 –</span>{' '}
           <span className="text-gradient block mt-2">Embedded System Design</span>
-          <span className="text-secondary-700 dark:text-white block mt-2 text-4xl">Spring 2026</span>
+          <span className="text-secondary-700 dark:text-white block mt-2 text-4xl">Fall 2026</span>
         </h1>
         
 
@@ -61,15 +61,15 @@ const HomePage: React.FC = () => {
             <svg className="w-5 h-5 text-secondary-600 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="font-medium text-secondary-700 dark:text-secondary-300">Section A: 3:30 - 4:45PM M/W</span>
-            <span className="text-gray-500 dark:text-gray-400">in Klaus 1447</span>
+            <span className="font-medium text-secondary-700 dark:text-secondary-300">Section A: 3:30 - 4:45PM T/R</span>
+            <span className="text-gray-500 dark:text-gray-400">in Klaus 2443</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 border border-secondary-200 dark:border-secondary-800">
             <svg className="w-5 h-5 text-secondary-600 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="font-medium text-secondary-700 dark:text-secondary-300">Section B: 3:30 - 4:45PM T/R</span>
-            <span className="text-gray-500 dark:text-gray-400">in Klaus 2456</span>
+            <span className="font-medium text-secondary-700 dark:text-secondary-300">Section B: 3:30 - 4:45PM M/W</span>
+            <span className="text-gray-500 dark:text-gray-400">in MRDC 2404</span>
           </div>
         </div>
 
