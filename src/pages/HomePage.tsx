@@ -312,10 +312,10 @@ const HomePage: React.FC = () => {
           
           <div className="space-y-4">
             {[
-              { label: 'Lab Assignments', value: 25, color: 'bg-emerald-500' },
-              { label: 'Midterm 1', value: 20, color: 'bg-secondary-500' },
-              { label: 'Midterm 2', value: 20, color: 'bg-secondary-400' },
-              { label: 'Final Project', value: 35, color: 'bg-gt-gold' },
+              { label: 'Lab Assignments', value: 20, color: 'bg-emerald-500' },
+              { label: 'Midterm 1', value: 25, color: 'bg-secondary-500' },
+              { label: 'Midterm 2', value: 25, color: 'bg-secondary-400' },
+              { label: 'Final Project', value: 30, color: 'bg-gt-gold' },
             ].map((item) => (
               <div key={item.label}>
                 <div className="flex justify-between text-sm mb-1">
