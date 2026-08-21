@@ -270,9 +270,9 @@ const HomePage: React.FC = () => {
                   <span className="font-bold text-gt-navy">MN</span>
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-700 dark:text-white">Matt Neto</p>
-                  <a href="mailto:mneto6@gatech.edu" className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-gt-gold">
-                    mneto6@gatech.edu
+                  <p className="font-medium text-secondary-700 dark:text-white">Jason Hsiao</p>
+                  <a href="mailto:jhsiao9@gatech.edu" className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-gt-gold">
+                    jhsiao9@gatech.edu
                   </a>
                 </div>
               </div>
@@ -285,11 +285,11 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { name: 'Pedro Chen', email: 'pchen396' },
-                { name: 'Jason Hsiao', email: 'jhsiao9' },
+                { name: 'Isaac Jerish', email: 'ijerish6' },
+                { name: 'Mitchell Jiang', email: 'mjiang301'}, 
                 { name: 'Advaith Menon', email: 'advaith' },
-                { name: 'Keshav Parthasarathy', email: 'kparthas6' },
+                { name: 'Amishi Mittal ', email: 'kparthas6' },
                 { name: 'Dev Patel', email: 'dpatel742' },
-                { name: 'Maddie White', email: 'mwhite359' },
               ].map((ta) => (
                 <a 
                   key={ta.email}
