@@ -267,7 +267,7 @@ const HomePage: React.FC = () => {
               <h4 className="text-xs font-semibold text-gt-gold uppercase tracking-wide mb-3">Graduate TA</h4>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gt-gold flex items-center justify-center">
-                  <span className="font-bold text-gt-navy">MN</span>
+                  <span className="font-bold text-gt-navy">JH</span>
                 </div>
                 <div>
                   <p className="font-medium text-secondary-700 dark:text-white">Jason Hsiao</p>
