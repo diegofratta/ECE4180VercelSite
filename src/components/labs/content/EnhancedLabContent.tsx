@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LabContent, LabPart, PartSubmission } from '../../../types';
+import { LabCheckoffMode, LabContent, LabPart, PartSubmission } from '../../../types';
+import { DEFAULT_CHECKOFF_MODE, resolvePartCheckoffMode } from '../../../utils/labCheckoff';
 import LabSection from './LabSection';
 import VideoPartUploader from '../../submissions/VideoPartUploader';
 import VideoPlayer from '../../VideoPlayer';
@@ -10,6 +11,9 @@ import { isStaffLevel } from '../../../utils/roles';
 interface EnhancedLabContentProps {
   content: LabContent;
   labId: string;
+  // How this lab's parts get checked off. Resolved by the parent from the lab
+  // record (see utils/labCheckoff.ts) rather than inferred from labId.
+  checkoffMode?: LabCheckoffMode;
   onLabPartsUpdate?: (parts: LabPart[]) => void;
   onPartSubmissionsUpdate?: (submissions: Record<string, PartSubmission>) => void;
   onLabProgressUpdate?: (progress: Record<string, { completed: boolean; checkoffType?: string; updatedAt?: string }>) => void;
@@ -18,6 +22,7 @@ interface EnhancedLabContentProps {
 const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
   content,
   labId,
+  checkoffMode = DEFAULT_CHECKOFF_MODE,
   onLabPartsUpdate,
   onPartSubmissionsUpdate,
   onLabProgressUpdate
@@ -53,9 +58,11 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
         : section.title;
       
       // Derive extra credit from section flag or .5 suffix in part number
-      const isExtraCredit = section.isExtraCredit || 
+      const isExtraCredit = section.isExtraCredit ||
         (partMatch && partMatch[1].includes('.'));
-      
+
+      const partMode = resolvePartCheckoffMode({ labId, checkoffMode }, section);
+
       return {
         partId: `part${partNumber}`,
         title: partTitle,
@@ -64,12 +71,12 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
           : `Part ${partNumber} of the lab`,
         order: parseFloat(partNumber),
         requiresCheckoff: true,
-        checkoffType: labId === 'lab0' ? 'none' : 'video' as 'video' | 'none' | 'in-lab',
+        checkoffType: (partMode === 'in-person' ? 'in-lab' : 'video') as 'video' | 'none' | 'in-lab',
         points: section.points || 0,
         isExtraCredit: isExtraCredit || false
       };
     });
-  }, [instructionSections, labId]);
+  }, [instructionSections, labId, checkoffMode]);
   
   // Update lab parts when they change
   useEffect(() => {
@@ -142,41 +149,47 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labId, authState.isAuthenticated, onPartSubmissionsUpdate]);
 
-  // Fetch lab progress for in-lab checkoffs (especially for lab0)
+  // Fetch per-part checkoff progress for this lab
   useEffect(() => {
     // Skip the effect if we don't have necessary data
     if (!labId || !authState.isAuthenticated) return;
-    
+
     const fetchLabProgress = async () => {
+      let progress: Record<string, { completed: boolean; checkoffType?: string; updatedAt?: string; lastModifiedByName?: string }> = {};
+
       try {
         const token = localStorage.getItem('idToken');
-        
+
         if (!token) {
           return;
         }
-        
-        // Get the student's progress for this lab
-        const studentId = authState.user?.studentId || authState.user?.username;
+
+        // `username` is the email address; the API keys on studentId, so derive
+        // the local part rather than sending an email that can't match.
+        const username = authState.user?.username || '';
+        const studentId =
+          authState.user?.studentId ||
+          (username.includes('@') ? username.split('@')[0] : username);
         if (!studentId) return;
-        
-        const apiUrl = `${API_ENDPOINT.replace(/\/$/, '')}/progress/${studentId}`;
-        
+
+        const apiUrl = `${API_ENDPOINT.replace(/\/$/, '')}/progress/${encodeURIComponent(studentId)}`;
+
         const response = await fetch(apiUrl, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        
+
         if (!response.ok) {
-          console.error('Failed to fetch lab progress');
+          console.error('Failed to fetch lab progress:', response.status);
           return;
         }
-        
+
         const data = await response.json();
-        
+
         // Find the lab in the response and extract parts progress
         const labData = data.labs?.find((l: any) => l.labId === labId);
-        
+
         if (labData && labData.parts) {
           const progressRecord: Record<string, { completed: boolean; checkoffType?: string; updatedAt?: string; lastModifiedByName?: string }> = {};
           labData.parts.forEach((part: any) => {
@@ -191,19 +204,23 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
             }
           });
           setLabProgress(progressRecord);
-          
-          // Notify parent about lab progress
-          if (onLabProgressUpdate) {
-            onLabProgressUpdate(progressRecord);
-          }
+          progress = progressRecord;
         }
-        setProgressLoading(false);
       } catch (err) {
         console.error('Error fetching lab progress:', err);
+      } finally {
+        // Always clear the spinner and notify the parent, even on a failed
+        // request or a lab that isn't in the response. Bailing out early here
+        // used to leave progressLoading stuck at true, which rendered
+        // "Loading status..." forever under every lab part (and "Loading..."
+        // in the sidebar summary) with no error anywhere on screen.
         setProgressLoading(false);
+        if (onLabProgressUpdate) {
+          onLabProgressUpdate(progress);
+        }
       }
     };
-    
+
     fetchLabProgress();
   }, [labId, authState.isAuthenticated, authState.user, onLabProgressUpdate]);
 
@@ -284,10 +301,10 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
   };
   
   // Render submission status for a part
-  const renderSubmissionStatus = (partId: string) => {
+  const renderSubmissionStatus = (partId: string, partMode: LabCheckoffMode) => {
     const submission = partSubmissions[partId];
     const progress = labProgress[partId];
-    
+
     // Show loading state while fetching progress
     if (progressLoading) {
       return (
@@ -323,8 +340,9 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
       );
     }
     
-    // For lab0 (in-lab checkoffs only), if not completed, show the in-lab checkoff message
-    if (labId === 'lab0') {
+    // In-person checkoff labs have nothing to submit, so show what to expect
+    // instead of a submission state.
+    if (partMode === 'in-person') {
       return (
         <div className="bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-400 text-blue-700 dark:text-blue-300 p-4 rounded-md mb-4">
           <p className="font-medium">In-person checkoff required</p>
@@ -444,23 +462,26 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
                     part.title === section.title.replace(/Part\s+\d+(?:\.\d+)?[\s:-]+\s*/i, '') ||
                     section.title.match(new RegExp(`Part\\s+${part.order}(?:\\s|:|-)`, 'i'))
                   )
-                  .map(part => (
+                  .map(part => {
+                    const partMode: LabCheckoffMode =
+                      part.checkoffType === 'in-lab' ? 'in-person' : 'video';
+                    return (
                     <div
                       key={part.partId}
                       id={`lab-part-${part.partId}`}
                       className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-4 bg-gray-50 dark:bg-gray-800/50"
                     >
                       <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                        {labId === 'lab0' ? `Lab Checkoff for ${part.title}` : `Submit Video for ${part.title}`}
+                        {partMode === 'in-person' ? `Lab Checkoff for ${part.title}` : `Submit Video for ${part.title}`}
                       </h3>
-                      
+
                       {/* Show submission status if available */}
-                      {renderSubmissionStatus(part.partId)}
-                      
-                      {/* Only show uploader if not approved and not lab0 */}
+                      {renderSubmissionStatus(part.partId, partMode)}
+
+                      {/* Only show the uploader for video parts that aren't approved yet */}
                       {(!partSubmissions[part.partId] ||
                         partSubmissions[part.partId].status !== 'approved') &&
-                        labId !== 'lab0' && (
+                        partMode === 'video' && (
                         <>
                           <VideoPartUploader
                             labId={labId}
@@ -473,7 +494,8 @@ const EnhancedLabContent: React.FC<EnhancedLabContentProps> = ({
                         </>
                       )}
                     </div>
-                  ))
+                    );
+                  })
                 }
               </div>
             )}

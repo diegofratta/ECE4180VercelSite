@@ -61,38 +61,50 @@ const MyGradesPage: React.FC = () => {
           throw new Error('No authentication token found');
         }
 
-        // Fetch student progress
-        const studentId = authState.user?.username || '';
-        const studentIdFromToken = authState.user?.studentId || '';
-        
-        const baseUrl = API_ENDPOINT.endsWith('/') ? API_ENDPOINT.slice(0, -1) : API_ENDPOINT;
-        
-        let progressResponse;
-        if (studentIdFromToken) {
-          progressResponse = await fetch(`${baseUrl}/progress/${encodeURIComponent(studentIdFromToken)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-        }
-        
-        if (!progressResponse || !progressResponse.ok) {
-          progressResponse = await fetch(`${baseUrl}/progress/${encodeURIComponent(studentId)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+        // Identify the student. `username` is the email address (Cognito never
+        // sets preferred_username, so AuthContext falls back to email), which
+        // the API can't key on — use the studentId attribute, falling back to
+        // the email local part the same way the backend derives it.
+        const username = authState.user?.username || '';
+        const studentId =
+          authState.user?.studentId ||
+          (username.includes('@') ? username.split('@')[0] : username);
+
+        if (!studentId) {
+          throw new Error('Could not determine your student ID. Try signing out and back in.');
         }
 
+        const baseUrl = API_ENDPOINT.endsWith('/') ? API_ENDPOINT.slice(0, -1) : API_ENDPOINT;
+
+        // Single request. This used to retry with the email address on any
+        // failure, which could never succeed and replaced the real status code
+        // with a generic message — hiding the actual cause from students.
+        const progressResponse = await fetch(
+          `${baseUrl}/progress/${encodeURIComponent(studentId)}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+
         if (!progressResponse.ok) {
-          throw new Error('Failed to fetch progress data');
+          let detail = '';
+          try {
+            detail = (await progressResponse.json())?.error || '';
+          } catch {
+            // Non-JSON error body; the status code is enough.
+          }
+          throw new Error(
+            `Failed to load your grades (HTTP ${progressResponse.status})${detail ? `: ${detail}` : ''}`
+          );
         }
 
         const data = await progressResponse.json();
-        // Transform API response: API returns { progress: [...] } but interface expects { labs: [...] }
+        // GET /progress/{studentId} returns { student, labs }.
         const transformedData: ProgressData = {
           student: {
-            name: data.name || '',
-            section: data.section || '',
-            hasAccount: data.hasAccount || false,
+            name: data.student?.fullName || data.student?.name || '',
+            section: data.student?.section || '',
+            hasAccount: data.student?.hasAccount || false,
           },
-          labs: data.progress || [],
+          labs: data.labs || [],
         };
         setProgressData(transformedData);
       } catch (err) {

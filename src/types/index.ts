@@ -41,7 +41,17 @@ export interface Lab {
   grade?: number | null;
   earlyBirdPoints?: number;
   unlockAt?: string;
+  // How students get credit for this lab's parts. Replaces the old
+  // `labId === 'lab0'` special case, which silently stopped working once labs
+  // started being created in the admin console with generated ids like
+  // `lab-d863b906`. Unset means "fall back to the legacy id check" — see
+  // resolveLabCheckoffMode in utils/labCheckoff.ts.
+  checkoffMode?: LabCheckoffMode;
 }
+
+// 'in-person' — a TA checks the student off in lab; no video uploader shown.
+// 'video'     — the student uploads a video demo for review.
+export type LabCheckoffMode = 'video' | 'in-person';
 
 // Structured lab content types
 export interface LabContent {
@@ -57,6 +67,9 @@ export interface LabSection {
   order: number;
   points?: number;           // Points for this section/part
   isExtraCredit?: boolean;   // If true, not counted toward base 100%
+  // Per-part override of the lab-level checkoffMode, for labs that mix
+  // in-person and video parts. Unset means "inherit from the lab".
+  checkoffMode?: LabCheckoffMode;
 }
 
 export interface LabContentBlock {

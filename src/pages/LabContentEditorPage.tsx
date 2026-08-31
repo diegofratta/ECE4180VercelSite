@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { API_ENDPOINT } from '../aws-config';
-import { Lab } from '../types';
+import { Lab, LabCheckoffMode } from '../types';
 import LabContentPreview from '../components/labs/content/LabContentPreview';
 import LabBuilder from '../components/labs/builder/LabBuilder';
 import { isStaffLevel } from '../utils/roles';
+import { resolveLabCheckoffMode } from '../utils/labCheckoff';
 
 const LabContentEditorPage: React.FC = () => {
   const { labId } = useParams<{ labId: string }>();
@@ -317,14 +318,29 @@ const LabContentEditorPage: React.FC = () => {
                           <h1 className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">{lab.title}</h1>
                           <p className="text-sm text-gray-500 dark:text-gray-400">Lab ID: {lab.labId}</p>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Due:</label>
-                          <input
-                            type="date"
-                            value={lab.dueDate?.split('T')[0] || ''}
-                            onChange={(e) => handleLabUpdate({ ...lab, dueDate: e.target.value })}
-                            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                          <div className="flex items-center gap-2">
+                            <label htmlFor="labCheckoffMode" className="text-sm font-medium text-gray-600 dark:text-gray-400">Checkoff:</label>
+                            <select
+                              id="labCheckoffMode"
+                              value={resolveLabCheckoffMode(lab)}
+                              onChange={(e) => handleLabUpdate({ ...lab, checkoffMode: e.target.value as LabCheckoffMode })}
+                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="video">Video upload</option>
+                              <option value="in-person">In person</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label htmlFor="labDueDate" className="text-sm font-medium text-gray-600 dark:text-gray-400">Due:</label>
+                            <input
+                              id="labDueDate"
+                              type="date"
+                              value={lab.dueDate?.split('T')[0] || ''}
+                              onChange={(e) => handleLabUpdate({ ...lab, dueDate: e.target.value })}
+                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>

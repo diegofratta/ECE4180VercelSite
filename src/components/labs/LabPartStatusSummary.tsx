@@ -1,22 +1,27 @@
 import React from 'react';
-import { LabPart, PartSubmission } from '../../types';
+import { LabCheckoffMode, LabPart, PartSubmission } from '../../types';
+import { DEFAULT_CHECKOFF_MODE } from '../../utils/labCheckoff';
 
 interface LabPartStatusSummaryProps {
-  labId: string;
+  // Accepted for call-site clarity; status now comes from checkoffMode rather
+  // than from sniffing the lab id.
+  labId?: string;
   labTitle: string;
   labParts: LabPart[];
   partSubmissions: Record<string, PartSubmission>;
   labProgress?: Record<string, { completed: boolean; checkoffType?: string; updatedAt?: string }>;
   progressLoading?: boolean;
+  // Resolved from the lab record by the parent — see utils/labCheckoff.ts.
+  checkoffMode?: LabCheckoffMode;
 }
 
 const LabPartStatusSummary: React.FC<LabPartStatusSummaryProps> = ({
-  labId,
   labTitle,
   labParts,
   partSubmissions,
   labProgress = {},
-  progressLoading = false
+  progressLoading = false,
+  checkoffMode = DEFAULT_CHECKOFF_MODE
 }) => {
   // Function to handle clicking on a part
   const handlePartClick = (partId: string) => {
@@ -60,8 +65,13 @@ const LabPartStatusSummary: React.FC<LabPartStatusSummaryProps> = ({
       };
     }
     
-    // For lab0 (in-lab checkoffs), if not completed, show in-lab checkoff required
-    if (labId === 'lab0') {
+    // In-person checkoff parts have nothing to submit, so there's no
+    // "not submitted" state — they're either approved or awaiting a TA.
+    const partMode: LabCheckoffMode =
+      labParts.find(p => p.partId === partId)?.checkoffType === 'in-lab'
+        ? 'in-person'
+        : checkoffMode;
+    if (partMode === 'in-person') {
       return {
         text: 'Checkoff in lab',
         cardBg: 'bg-blue-50 dark:bg-blue-900/20',

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Lab, LabStatus, LabPart, PartSubmission } from '../types';
 import { API_ENDPOINT } from '../aws-config';
 import { labDisplayLabel } from '../utils/labDisplay';
+import { resolveLabCheckoffMode } from '../utils/labCheckoff';
 import ReactMarkdown from 'react-markdown';
 import EnhancedLabContent from '../components/labs/content/EnhancedLabContent';
 import LabPartStatusSummary from '../components/labs/LabPartStatusSummary';
@@ -192,7 +193,8 @@ const LabDetailPage: React.FC = () => {
   // Main Lab Content
   if (lab) {
     const labNumber = labDisplayLabel(lab);
-    
+    const checkoffMode = resolveLabCheckoffMode(lab);
+
     return (
       <div className="max-w-7xl mx-auto animate-fade-in">
         {/* Back Button */}
@@ -269,6 +271,7 @@ const LabDetailPage: React.FC = () => {
                   partSubmissions={partSubmissions}
                   labProgress={labProgress}
                   progressLoading={progressLoading}
+                  checkoffMode={checkoffMode}
                 />
               </div>
             )}
@@ -280,6 +283,7 @@ const LabDetailPage: React.FC = () => {
               <EnhancedLabContent
                 content={lab.structuredContent}
                 labId={lab.labId}
+                checkoffMode={checkoffMode}
                 onLabPartsUpdate={handleLabPartsUpdate}
                 onPartSubmissionsUpdate={handlePartSubmissionsUpdate}
                 onLabProgressUpdate={handleLabProgressUpdate}

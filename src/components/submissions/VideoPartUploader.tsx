@@ -130,8 +130,13 @@ const VideoPartUploader: React.FC<VideoPartUploaderProps> = ({
         }
       };
 
+      // NOTE: this callback runs after handleUpload's try/catch has already
+      // returned, so anything thrown in here is unhandled — it used to leave
+      // the button stuck on "Uploading..." forever with no error shown, even
+      // though the video was already in S3. Everything below is wrapped.
       xhr.onload = async () => {
         console.log('S3 upload completed with status:', xhr.status);
+        try {
         if (xhr.status === 200) {
           // Step 3: Create part submission record
           // Fix the URL by ensuring no double slashes
@@ -179,7 +184,15 @@ const VideoPartUploader: React.FC<VideoPartUploaderProps> = ({
           // Notify parent component
           onUploadComplete(submissionData.submissionId, fileKey);
         } else {
-          throw new Error('Upload failed');
+          throw new Error(`Upload failed with status ${xhr.status}`);
+        }
+        } catch (error) {
+          console.error('Error finalizing submission:', error);
+          setUploadProgress(prev => ({
+            ...prev,
+            status: 'error',
+            error: (error as Error).message
+          }));
         }
       };
 
