@@ -270,7 +270,7 @@ const HomePage: React.FC = () => {
                   <span className="font-bold text-gt-navy">JH</span>
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-700 dark:text-white">Jason Hsiao</p>
+                  <p className="font-medium text-secondary-700 dark:text-white">Bason Hsiao</p>
                   <a href="mailto:jhsiao9@gatech.edu" className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-gt-gold">
                     jhsiao9@gatech.edu
                   </a>
